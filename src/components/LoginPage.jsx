@@ -5,6 +5,7 @@ const LoginPage = ({ onLogin, language = 'hi', onToggleLanguage, translations })
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userType, setUserType] = useState('admin'); // 'admin' or 'user'
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,7 +13,8 @@ const LoginPage = ({ onLogin, language = 'hi', onToggleLanguage, translations })
     
     // Mock authentication
     setTimeout(() => {
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
+      if ((credentials.username === 'admin' && credentials.password === 'admin123' && userType === 'admin') ||
+          (credentials.username === 'user' && credentials.password === 'user123' && userType === 'user')) {
         onLogin();
       } else {
         alert(translations.invalidCredentials);
@@ -59,6 +61,37 @@ const LoginPage = ({ onLogin, language = 'hi', onToggleLanguage, translations })
           </h3>
           
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* User Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {language === 'hi' ? 'उपयोगकर्ता प्रकार' : 'User Type'}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUserType('admin')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    userType === 'admin'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {language === 'hi' ? 'प्रशासक' : 'Admin'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserType('user')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    userType === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {language === 'hi' ? 'उपयोगकर्ता' : 'User'}
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {translations.username}
@@ -118,7 +151,10 @@ const LoginPage = ({ onLogin, language = 'hi', onToggleLanguage, translations })
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>{translations.demoCredentials}</p>
-            <p className="font-medium">Username: admin | Password: admin123</p>
+            <div className="space-y-1 font-medium">
+              <p>{language === 'hi' ? 'प्रशासक:' : 'Admin:'} admin / admin123</p>
+              <p>{language === 'hi' ? 'उपयोगकर्ता:' : 'User:'} user / user123</p>
+            </div>
           </div>
         </div>
 

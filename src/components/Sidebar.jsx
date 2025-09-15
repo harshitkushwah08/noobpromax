@@ -1,6 +1,5 @@
 import React from 'react';
-import { Map, FileText, Building2, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
-import InfoTab from './InfoTab';
+import { Map, FileText, Building2, Info, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
 const Sidebar = ({ collapsed, onToggleCollapse, activeTab, onTabChange, onLogout, language = 'hi', translations, userRole = 'admin' }) => {
   const menuItems = [
@@ -21,7 +20,13 @@ const Sidebar = ({ collapsed, onToggleCollapse, activeTab, onTabChange, onLogout
       label: translations.departments, 
       icon: Building2, 
       labelSecondary: translations.departmentsSecondary
-    }] : [])
+    }] : []),
+    { 
+      id: 'about', 
+      label: translations.about, 
+      icon: Info, 
+      labelSecondary: translations.aboutSecondary
+    }
   ];
 
   return (
@@ -74,10 +79,6 @@ const Sidebar = ({ collapsed, onToggleCollapse, activeTab, onTabChange, onLogout
         </div>
       </nav>
 
-      {/* Info Tab */}
-      {!collapsed && (
-        <InfoTab language={language} translations={translations} />
-      )}
     </div>
   );
 };

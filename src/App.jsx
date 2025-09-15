@@ -6,9 +6,10 @@ import Sidebar from './components/Sidebar';
 import MapView from './components/MapView';
 import IssuesPage from './components/IssuesPage';
 import DepartmentsPage from './components/DepartmentsPage';
+import AboutPage from './components/AboutPage';
 import LoadingScreen from './components/LoadingScreen';
 import ProfileDropdown from './components/ProfileDropdown';
-import { User, Globe, Building2 } from 'lucide-react';
+import { User, Globe, Building2, Info } from 'lucide-react';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,6 +65,8 @@ function App() {
       issuesSecondary: 'Issues',
       departments: 'विभाग',
       departmentsSecondary: 'Departments',
+      about: 'जानकारी',
+      aboutSecondary: 'About',
       logout: 'लॉग आउट',
       logoutSecondary: 'Logout',
       
@@ -169,6 +172,8 @@ function App() {
       issuesSecondary: 'शिकायतें',
       departments: 'Departments',
       departmentsSecondary: 'विभाग',
+      about: 'About',
+      aboutSecondary: 'जानकारी',
       logout: 'Logout',
       logoutSecondary: 'लॉग आउट',
       
@@ -402,6 +407,13 @@ function App() {
               language={language} 
               departments={departments} 
               issues={issues}
+              onAddDepartment={(newDept) => setDepartments(prev => [...prev, newDept])}
+              translations={t}
+            />
+          )}
+          {activeTab === 'about' && (
+            <AboutPage 
+              language={language} 
               translations={t}
             />
           )}

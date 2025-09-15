@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import IssuesSidebar from './IssuesSidebar';
-import { MapPin, AlertTriangle, Clock, User, Phone, MapPinIcon } from 'lucide-react';
+import ImageModal from './ImageModal';
+import { MapPin, AlertTriangle, Clock, User, Phone, MapPinIcon, Camera } from 'lucide-react';
 
 const MapView = ({ issues = [], onIssueSelect, language, translations }) => {
   const [viewState, setViewState] = useState({
@@ -14,6 +15,9 @@ const MapView = ({ issues = [], onIssueSelect, language, translations }) => {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [hoveredIssue, setHoveredIssue] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Filter issues to show only those with valid coordinates
   const validIssues = issues.filter(issue => 
@@ -138,6 +142,12 @@ const MapView = ({ issues = [], onIssueSelect, language, translations }) => {
                         <Clock size={12} />
                         <span>{getStatusLabel(issue.status)}</span>
                       </div>
+                      {issue.images && issue.images.length > 0 && (
+                        <div className="flex items-center space-x-2 text-xs text-gray-600">
+                          <Camera size={12} />
+                          <span>{issue.images.length} {language === 'hi' ? 'तस्वीरें' : 'images'}</span>
+                        </div>
+                      )}
                     </div>
                     {/* Arrow */}
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
@@ -202,6 +212,34 @@ const MapView = ({ issues = [], onIssueSelect, language, translations }) => {
                       <span>{getStatusLabel(selectedIssue.status)}</span>
                     </div>
                   </div>
+                  
+                  {/* Images */}
+                  {selectedIssue.images && selectedIssue.images.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 mb-2">
+                        {language === 'hi' ? 'तस्वीरें:' : 'Images:'}
+                      </p>
+                      <div className="flex space-x-2 overflow-x-auto">
+                        {selectedIssue.images.map((image, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedImages(selectedIssue.images);
+                              setCurrentImageIndex(index);
+                              setShowImageModal(true);
+                            }}
+                            className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                          >
+                            <img
+                              src={image.url}
+                              alt={image.caption || `Issue image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="pt-2 border-t border-gray-200">
                     <p className="text-xs text-gray-500">
@@ -272,6 +310,17 @@ const MapView = ({ issues = [], onIssueSelect, language, translations }) => {
         }}
         selectedIssue={selectedIssue}
       />
+
+      {/* Image Modal */}
+      {showImageModal && selectedImages.length > 0 && (
+        <ImageModal
+          images={selectedImages}
+          currentIndex={currentImageIndex}
+          onClose={() => setShowImageModal(false)}
+          onNext={() => setCurrentImageIndex((prev) => (prev + 1) % selectedImages.length)}
+          onPrev={() => setCurrentImageIndex((prev) => (prev - 1 + selectedImages.length) % selectedImages.length)}
+        />
+      )}
     </div>
   );
 };

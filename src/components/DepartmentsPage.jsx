@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Building2, Users, CheckCircle, Clock, Phone, Mail, TrendingUp } from 'lucide-react';
+import { Building2, Users, CheckCircle, Clock, Phone, Mail, TrendingUp, Plus } from 'lucide-react';
+import AddDepartmentModal from './AddDepartmentModal';
 
-const DepartmentsPage = ({ departments, issues, language, translations }) => {
+const DepartmentsPage = ({ departments, issues, language, translations, onAddDepartment }) => {
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const getDepartmentIssues = (departmentId) => {
     return issues.filter(issue => issue.assignedDepartments.includes(departmentId));
@@ -27,10 +29,21 @@ const DepartmentsPage = ({ departments, issues, language, translations }) => {
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {translations.departmentManagement}
-        </h2>
-        <p className="text-gray-600">{translations.departmentManagementDesc}</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              {translations.departmentManagement}
+            </h2>
+            <p className="text-gray-600">{translations.departmentManagementDesc}</p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus size={20} />
+            <span>{language === 'hi' ? 'नया विभाग जोड़ें' : 'Add New Department'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Departments Grid */}
@@ -206,6 +219,19 @@ const DepartmentsPage = ({ departments, issues, language, translations }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Department Modal */}
+      {showAddModal && (
+        <AddDepartmentModal
+          onAdd={(newDept) => {
+            onAddDepartment(newDept);
+            setShowAddModal(false);
+          }}
+          onClose={() => setShowAddModal(false)}
+          language={language}
+          translations={translations}
+        />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Filter, Eye, Calendar, MapPin, User, Phone, AlertCircle } from 'lucide-react';
+import { Search, Filter, Eye, Calendar, MapPin, User, Phone, AlertCircle, Clock, RotateCcw, CheckCircle2 } from 'lucide-react';
 import AssignDepartmentModal from './AssignDepartmentModal';
+import IssueProgressModal from './IssueProgressModal';
 
 const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStatus, language, translations }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -8,6 +9,9 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
   const [filterPriority, setFilterPriority] = useState('all');
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [showReopenConfirm, setShowReopenConfirm] = useState(false);
+  const [issueToReopen, setIssueToReopen] = useState(null);
 
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,6 +64,19 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
     onAssignDepartment(issueId, departmentIds);
     setShowAssignModal(false);
     setSelectedIssue(null);
+  };
+
+  const handleReopenIssue = (issue) => {
+    setIssueToReopen(issue);
+    setShowReopenConfirm(true);
+  };
+
+  const confirmReopenIssue = () => {
+    if (issueToReopen) {
+      onUpdateIssueStatus(issueToReopen.id, 'pending');
+      setShowReopenConfirm(false);
+      setIssueToReopen(null);
+    }
   };
 
   return (
@@ -156,6 +173,13 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
                 <Calendar size={16} />
                 <span>{translations.created}: {new Date(issue.createdAt).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN')}</span>
               </div>
+              
+              {issue.completedAt && (
+                <div className="flex items-center space-x-2 text-sm text-green-600">
+                  <CheckCircle2 size={16} />
+                  <span>{language === 'hi' ? 'पूर्ण:' : 'Completed:'} {new Date(issue.completedAt).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN')}</span>
+                </div>
+              )}
 
               {/* Assigned Departments */}
               {issue.assignedDepartments.length > 0 && (
@@ -183,9 +207,20 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
                 <button
                   onClick={() => {
                     setSelectedIssue(issue);
+                    setShowProgressModal(true);
+                  }}
+                  className="flex items-center space-x-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <Clock size={16} />
+                  <span>{language === 'hi' ? 'प्रगति' : 'Progress'}</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setSelectedIssue(issue);
                     setShowAssignModal(true);
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   {translations.assignDepartment}
                 </button>
@@ -193,15 +228,16 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
                 {issue.status === 'assigned' || issue.status === 'in-progress' ? (
                   <button
                     onClick={() => onUpdateIssueStatus(issue.id, 'completed')}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     {translations.markComplete}
                   </button>
                 ) : issue.status === 'completed' ? (
                   <button
-                    onClick={() => onUpdateIssueStatus(issue.id, 'pending')}
-                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    onClick={() => handleReopenIssue(issue)}
+                    className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
+                    <RotateCcw size={16} />
                     {translations.reopen}
                   </button>
                 ) : null}
@@ -233,8 +269,68 @@ const IssuesPage = ({ issues, departments, onAssignDepartment, onUpdateIssueStat
           translations={translations}
         />
       )}
+
+      {/* Progress Modal */}
+      {showProgressModal && selectedIssue && (
+        <IssueProgressModal
+          issue={selectedIssue}
+          onClose={() => {
+            setShowProgressModal(false);
+            setSelectedIssue(null);
+          }}
+          language={language}
+          translations={translations}
+        />
+      )}
+
+      {/* Reopen Confirmation Modal */}
+      {showReopenConfirm && issueToReopen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md m-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <RotateCcw className="h-8 w-8 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-gray-800">
+                {language === 'hi' ? 'शिकायत पुनः खोलें' : 'Reopen Issue'}
+              </h3>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-2">
+                <strong>{language === 'hi' ? 'शिकायत:' : 'Issue:'}</strong> {issueToReopen.complaintNumber}
+              </p>
+              <p className="text-sm text-gray-800 font-medium mb-4">{issueToReopen.title}</p>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  {language === 'hi' 
+                    ? 'क्या आप वाकई इस पूर्ण हुई शिकायत को पुनः खोलना चाहते हैं? यह शिकायत को लंबित स्थिति में वापस कर देगा।'
+                    : 'Are you sure you want to reopen this completed issue? This will move the issue back to pending status.'
+                  }
+                </p>
+              </div>
+            </div>
     </div>
   );
 };
 
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowReopenConfirm(false);
+                  setIssueToReopen(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {language === 'hi' ? 'रद्द करें' : 'Cancel'}
+              </button>
+              <button
+                onClick={confirmReopenIssue}
+                className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+              >
+                {language === 'hi' ? 'पुनः खोलें' : 'Reopen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 export default IssuesPage;
